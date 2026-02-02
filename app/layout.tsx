@@ -18,6 +18,9 @@ export const metadata: Metadata = {
     description: minikitConfig.miniapp.ogDescription,
     images: [minikitConfig.miniapp.ogImageUrl],
   },
+  other: {
+    "base:app_id": "6980d9982aafa0bc9ad8a5d9",
+  },
 };
 
 export default function RootLayout({
