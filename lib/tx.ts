@@ -1,4 +1,4 @@
-import type { Call } from "@coinbase/onchainkit/transaction";
+import type { Call } from "@coinbase/onchainkit/transaction/types";
 import { RECORD_TX_TO } from "./constants";
 
 export const START_GAME_CALLS: Call[] = [
