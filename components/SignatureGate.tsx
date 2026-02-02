@@ -49,7 +49,6 @@ export function SignatureGate({ children }: SignatureGateProps) {
         <div className="mt-6">
           <Signature
             message={SIGN_MESSAGE}
-            label="Sign to Play"
             onSuccess={(sig: string) => {
               setSignature(sig);
               setRejected(false);
