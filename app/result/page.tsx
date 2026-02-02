@@ -7,9 +7,7 @@ import { Card } from "../../components/Card";
 import { PrimaryButton } from "../../components/PrimaryButton";
 import { ProgressBar } from "../../components/ProgressBar";
 import { useSwipe } from "../../hooks/useSwipe";
-import { ENABLE_TX } from "../../lib/constants";
 import { getDailyGoal, getStatsSnapshot } from "../../lib/stats";
-import { recordOnchain } from "../../lib/tx";
 
 export default function ResultPage() {
   const router = useRouter();
@@ -72,18 +70,6 @@ export default function ResultPage() {
             <p>Best day</p>
           </div>
         </div>
-
-        {ENABLE_TX ? (
-          <button
-            type="button"
-            onClick={() => {
-              void recordOnchain();
-            }}
-            className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-600"
-          >
-            Record onchain (free)
-          </button>
-        ) : null}
 
         <div className="mt-auto flex flex-col gap-3">
           <PrimaryButton onClick={() => router.push("/game")}>
