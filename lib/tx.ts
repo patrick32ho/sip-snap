@@ -9,7 +9,7 @@ type StartGameCall = {
 export const START_GAME_CALLS: StartGameCall[] = [
   {
     to: RECORD_TX_TO,
-    value: 0n,
+    value: BigInt(0),
     data: "0x",
   },
 ];
