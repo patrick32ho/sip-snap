@@ -1,127 +1,86 @@
 "use client";
-import { useState, useEffect } from "react";
-import sdk from "@farcaster/miniapp-sdk";
-import { useMiniApp } from "./providers/MiniAppProvider";
+
 import { useRouter } from "next/navigation";
-import { farcasterConfig } from "../farcaster.config";
-import styles from "./page.module.css";
-
-interface AuthResponse {
-  success: boolean;
-  user?: {
-    fid: number; // FID is the unique identifier for the user
-    issuedAt?: number;
-    expiresAt?: number;
-  };
-  message?: string; // Error messages come as 'message' not 'error'
-}
-
+import { useEffect, useState } from "react";
+import { AppShell } from "../components/AppShell";
+import { Card } from "../components/Card";
+import { PrimaryButton } from "../components/PrimaryButton";
+import { ProgressBar } from "../components/ProgressBar";
+import { DAILY_GOAL_DEFAULT, MAX_DAILY_GOAL } from "../lib/constants";
+import { getDailyGoal, getTodayCount, setDailyGoal } from "../lib/stats";
 
 export default function Home() {
-  const { context, isReady } = useMiniApp();
-  const [email, setEmail] = useState("");
-  const [error, setError] = useState("");
   const router = useRouter();
- 
-  
-
-  // If you need to verify the user's identity, you can use the SDK's quickAuth.
-  // This will verify the user's signature and return the user's FID. You can update
-  // this to meet your needs. See the /app/api/auth/route.ts file for more details.
-  // Note: If you don't need to verify the user's identity, you can get their FID and other user data
-  // via `context.user.fid`.
-  const [authData, setAuthData] = useState<AuthResponse | null>(null);
-  const [isAuthLoading, setIsAuthLoading] = useState(true);
-  const [authError, setAuthError] = useState<Error | null>(null);
+  const [todayCount, setTodayCount] = useState(0);
+  const [goal, setGoal] = useState(DAILY_GOAL_DEFAULT);
 
   useEffect(() => {
-    const authenticate = async () => {
-      try {
-        const response = await sdk.quickAuth.fetch('/api/auth');
-        const data = await response.json();
-        setAuthData(data);
-      } catch (err) {
-        setAuthError(err as Error);
-      } finally {
-        setIsAuthLoading(false);
-      }
-    };
+    setTodayCount(getTodayCount());
+    setGoal(getDailyGoal());
+  }, []);
 
-    if (isReady) {
-      authenticate();
-    }
-  }, [isReady]);
-
-  const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-
-    // Check authentication first
-    if (isAuthLoading) {
-      setError("Please wait while we verify your identity...");
-      return;
-    }
-
-    if (authError || !authData?.success) {
-      setError("Please authenticate to join the waitlist");
-      return;
-    }
-
-    if (!email) {
-      setError("Please enter your email address");
-      return;
-    }
-
-    if (!validateEmail(email)) {
-      setError("Please enter a valid email address");
-      return;
-    }
-
-    // TODO: Save email to database/API with user FID
-    console.log("Valid email submitted:", email);
-    console.log("User authenticated:", authData.user);
-    
-    // Navigate to success page
-    router.push("/success");
+  const updateGoal = (delta: number) => {
+    setGoal((prev) => {
+      const next = Math.min(MAX_DAILY_GOAL, Math.max(1, prev + delta));
+      setDailyGoal(next);
+      return next;
+    });
   };
 
   return (
-    <div className={styles.container}>
-      <button className={styles.closeButton} type="button">
-        ✕
-      </button>
-      
-      <div className={styles.content}>
-        <div className={styles.waitlistForm}>
-          <h1 className={styles.title}>Join {farcasterConfig.miniapp.name.toUpperCase()}</h1>
-          
-          <p className={styles.subtitle}>
-             Hey {context?.user?.displayName || "there"}, Get early access and be the first to experience the future of<br />
-            crypto marketing strategy.
-          </p>
+    <AppShell>
+      <Card className="mb-6">
+        <div className="flex flex-col gap-4">
+          <div>
+            <h1 className="text-3xl font-semibold text-slate-900">
+              SipSnap
+            </h1>
+            <p className="mt-2 text-sm text-slate-600">
+              Tap to log a glass. Keep the streak alive.
+            </p>
+          </div>
 
-          <form onSubmit={handleSubmit} className={styles.form}>
-            <input
-              type="email"
-              placeholder="Your amazing email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className={styles.emailInput}
-            />
-            
-            {error && <p className={styles.error}>{error}</p>}
-            
-            <button type="submit" className={styles.joinButton}>
-              JOIN WAITLIST
-            </button>
-          </form>
+          <ProgressBar current={todayCount} goal={goal} />
+
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-wide text-slate-400">
+                  Daily goal
+                </p>
+                <p className="text-lg font-semibold text-slate-900">
+                  {goal} glasses
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => updateGoal(-1)}
+                  className="h-10 w-10 rounded-full border border-slate-200 bg-white text-lg font-semibold text-slate-600"
+                >
+                  -
+                </button>
+                <button
+                  type="button"
+                  onClick={() => updateGoal(1)}
+                  className="h-10 w-10 rounded-full border border-slate-200 bg-white text-lg font-semibold text-slate-600"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
+      </Card>
+
+      <div className="mt-auto">
+        <PrimaryButton onClick={() => router.push("/game")}>
+          Start
+        </PrimaryButton>
+        <p className="mt-3 text-center text-xs text-slate-400">
+          One tap, one sip, one step closer to your goal.
+        </p>
       </div>
-    </div>
+    </AppShell>
   );
 }

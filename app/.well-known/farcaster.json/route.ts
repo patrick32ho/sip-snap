@@ -1,5 +1,9 @@
-import { farcasterConfig } from "../../../farcaster.config";
+import { minikitConfig } from "../../../minikit.config";
 
 export async function GET() {
-  return Response.json(farcasterConfig);
+  return new Response(JSON.stringify(minikitConfig), {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
 }

@@ -1,27 +1,32 @@
 "use client";
-import { ReactNode, useState } from "react";
-import { base } from "wagmi/chains";
-import { createConfig, http, WagmiProvider } from "wagmi";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { farcasterMiniApp } from "@farcaster/miniapp-wagmi-connector";
-import { MiniAppProvider } from "./providers/MiniAppProvider";
 
-const config = createConfig({
-  chains: [base],
-  transports: { [base.id]: http() },
-  connectors: [farcasterMiniApp()],
-});
+import { ReactNode } from "react";
+import { MiniKitProvider } from "@coinbase/onchainkit/minikit";
+import { base } from "viem/chains";
 
 export function Providers({ children }: { children: ReactNode }) {
-  const [queryClient] = useState(() => new QueryClient());
+  const apiKey = process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY;
+  const projectName =
+    process.env.NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME || "SipSnap";
+  const iconUrl = process.env.NEXT_PUBLIC_ICON_URL;
 
   return (
-    <MiniAppProvider>
-      <WagmiProvider config={config}>
-        <QueryClientProvider client={queryClient}>
-          {children}
-        </QueryClientProvider>
-      </WagmiProvider>
-    </MiniAppProvider>
+    <MiniKitProvider
+      chain={base}
+      apiKey={apiKey}
+      config={{
+        appearance: {
+          name: projectName,
+          logo: iconUrl,
+          mode: "light",
+          theme: "default",
+        },
+        wallet: {
+          display: "classic",
+        },
+      }}
+    >
+      {children}
+    </MiniKitProvider>
   );
 }
